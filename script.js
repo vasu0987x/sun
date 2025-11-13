@@ -3,7 +3,7 @@ const itemsPerPage = 6
 let currentPage = 1
 
 function loadPortfolioData() {
-  fetch("videos.json")
+  fetch("/api/videos")
     .then((response) => response.json())
     .then((data) => {
       allVideos = data.videos || []
