@@ -2,18 +2,39 @@
   "videos": [
     {
       "id": 1,
-      "title": "Sample Video 1",
+      "title": "Tanmay Bhatt",
       "type": "youtube",
       "link": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
       "description": "Professional video editing showcase"
     },
     {
       "id": 2,
-      "title": "Sample Video 2",
+      "title": "Sample Video",
       "type": "drive",
-      "link": "https://drive.google.com/file/d/18Vv2pZF-_I0m2UvoenDyzLvfIsaJqoK7/view?usp=sharing,
+      "link": "https://drive.google.com/file/d/18Vv2pZF-_I0m2UvoenDyzLvfIsaJqoK7/view?usp=sharing",
       "description": "Motion graphics and effects"
-    }
+    },
+    {
+      "id": 3,
+      "title": "Podcast",
+      "type": "youtube",
+      "link": "https://youtu.be/y0hNYNZZ7q0?si=6T8fb8EqGZBOvHo-",
+      "description": "Crossed Over 3 Million Views"
+    },
+    {
+      "id": 4,
+      "title": "Doctumentory",
+      "type": "youtube",
+      "link": "https://youtu.be/ZXWdktDBi8Q?si=Z9MDqxPVq-29ZOxR",
+      "description": "Crossed 2 Million in 2 Days"
+    },
+    {
+      "id": 5,
+      "title": "Sports Talk",
+      "type": "youtube",
+      "link": "https://youtu.be/Zyqc83NI9_E?si=MToKzsOZfRzI66XF",
+      "description": " "
+    },
   ]
 }
 
