@@ -1,14 +1,19 @@
-// Load videos from localStorage
+let allVideos = []
 const itemsPerPage = 6
 let currentPage = 1
-let allVideos = []
 
 function loadPortfolioData() {
-  const stored = localStorage.getItem("portfolioVideos")
-  if (stored) {
-    allVideos = JSON.parse(stored)
-  }
-  renderPortfolio()
+  fetch("videos.json")
+    .then((response) => response.json())
+    .then((data) => {
+      allVideos = data.videos || []
+      renderPortfolio()
+    })
+    .catch((error) => {
+      console.log("[v0] Error loading videos:", error)
+      allVideos = []
+      renderPortfolio()
+    })
 }
 
 function renderPortfolio() {
@@ -18,6 +23,11 @@ function renderPortfolio() {
 
   const grid = document.getElementById("portfolioGrid")
   grid.innerHTML = ""
+
+  if (visibleVideos.length === 0) {
+    grid.innerHTML =
+      '<p style="grid-column: 1/-1; text-align: center; color: #a8ff35;">No videos added yet. Check back soon!</p>'
+  }
 
   visibleVideos.forEach((video) => {
     const card = createVideoCard(video)
