@@ -10,8 +10,8 @@
     {
       "id": 2,
       "title": "Sample Video 2",
-      "type": "youtube",
-      "link": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+      "type": "drive",
+      "link": "https://drive.google.com/file/d/18Vv2pZF-_I0m2UvoenDyzLvfIsaJqoK7/view?usp=drive_link",
       "description": "Motion graphics and effects"
     }
   ]
