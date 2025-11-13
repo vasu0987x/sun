@@ -1,10 +1,39 @@
 const ADMIN_PASSWORD = "admin123"
+const GITHUB_CONFIG = {
+  owner: "vasu0987x",
+  repo: "sun",
+  branch: "main",
+}
+
+function saveGitHubToken() {
+  const token = document.getElementById("githubToken").value.trim()
+  if (!token) {
+    alert("Please enter your GitHub token")
+    return
+  }
+  localStorage.setItem("githubToken", token)
+  alert("Token saved! You can now add videos.")
+  document.getElementById("tokenSetupBox").style.display = "none"
+  loadVideosInAdmin()
+}
+
+function getGitHubToken() {
+  return localStorage.getItem("githubToken")
+}
 
 function authenticateAdmin() {
   const passwordInput = document.getElementById("passwordInput").value
   const errorMsg = document.getElementById("errorMsg")
+  const token = getGitHubToken()
 
   if (passwordInput === ADMIN_PASSWORD) {
+    if (!token) {
+      document.getElementById("tokenSetupBox").style.display = "block"
+      errorMsg.textContent = "Please set up your GitHub token first"
+      errorMsg.classList.remove("hidden")
+      return
+    }
+
     document.getElementById("loginSection").classList.add("hidden")
     document.getElementById("dashboardSection").classList.remove("hidden")
     errorMsg.classList.add("hidden")
@@ -51,10 +80,26 @@ document.addEventListener("DOMContentLoaded", () => {
 })
 
 function loadVideosInAdmin() {
-  fetch("/api/videos")
+  const token = getGitHubToken()
+  if (!token) return
+
+  fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/videos.json`, {
+    headers: {
+      Authorization: `token ${token}`,
+    },
+  })
     .then((response) => response.json())
     .then((data) => {
-      const videos = data.videos || []
+      if (data.message && data.message.includes("404")) {
+        const videosList = document.getElementById("videosList")
+        const noVideosMsg = document.getElementById("noVideosMsg")
+        videosList.innerHTML = ""
+        noVideosMsg.style.display = "block"
+        return
+      }
+
+      const content = atob(data.content)
+      const videos = JSON.parse(content).videos || []
       const videosList = document.getElementById("videosList")
       const noVideosMsg = document.getElementById("noVideosMsg")
 
@@ -67,7 +112,7 @@ function loadVideosInAdmin() {
       noVideosMsg.style.display = "none"
       videosList.innerHTML = ""
 
-      videos.forEach((video) => {
+      videos.forEach((video, index) => {
         const item = document.createElement("div")
         item.className = "video-item"
         item.innerHTML = `
@@ -76,7 +121,7 @@ function loadVideosInAdmin() {
                 <p><strong>Type:</strong> ${video.type === "youtube" ? "YouTube" : "Google Drive"}</p>
                 <p>${video.description || "No description"}</p>
             </div>
-            <button class="delete-btn" onclick="deleteVideo(${video.id})">Delete</button>
+            <button class="delete-btn" onclick="deleteVideo(${index})">Delete</button>
         `
         videosList.appendChild(item)
       })
@@ -91,60 +136,115 @@ function addVideo(event) {
   const type = document.getElementById("videoType").value
   const link = document.getElementById("videoLink").value
   const description = document.getElementById("videoDescription").value
+  const token = getGitHubToken()
+
+  if (!token) {
+    alert("GitHub token not configured. Please login again.")
+    return
+  }
 
   if (!title || !type || !link) {
     alert("Please fill in all required fields")
     return
   }
 
-  fetch("/api/videos", {
-    method: "POST",
+  fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/videos.json`, {
     headers: {
-      "Content-Type": "application/json",
+      Authorization: `token ${token}`,
     },
-    body: JSON.stringify({
-      title,
-      type,
-      link,
-      description,
-      password: ADMIN_PASSWORD,
-    }),
   })
     .then((response) => response.json())
     .then((data) => {
-      if (data.error) {
-        alert("Failed to add video: " + data.error)
+      let videos = []
+      let sha = null
+
+      if (data.content) {
+        const content = atob(data.content)
+        videos = JSON.parse(content).videos || []
+        sha = data.sha
+      }
+
+      videos.push({
+        id: Date.now(),
+        title,
+        type,
+        link,
+        description,
+      })
+
+      const newContent = JSON.stringify({ videos }, null, 2)
+      const encodedContent = btoa(newContent)
+
+      return fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/videos.json`, {
+        method: "PUT",
+        headers: {
+          Authorization: `token ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          message: `Add video: ${title}`,
+          content: encodedContent,
+          sha: sha,
+          branch: GITHUB_CONFIG.branch,
+        }),
+      })
+    })
+    .then((response) => response.json())
+    .then((data) => {
+      if (data.message && data.message.includes("error")) {
+        alert("Failed to add video: " + data.message)
         return
       }
-      alert("Video added successfully! It's now visible to everyone.")
+      alert("Video added successfully! It's now visible to everyone on your portfolio.")
       document.getElementById("addVideoForm").reset()
-      loadVideosInAdmin()
+      setTimeout(() => loadVideosInAdmin(), 1000)
     })
     .catch((error) => {
       console.log("[v0] Error:", error)
-      alert("Error adding video. Make sure server is running on http://localhost:3000")
+      alert("Error adding video. Make sure your GitHub token is valid.")
     })
 }
 
-function deleteVideo(id) {
+function deleteVideo(index) {
   if (confirm("Are you sure you want to delete this video?")) {
-    fetch(`/api/videos/${id}`, {
-      method: "DELETE",
+    const token = getGitHubToken()
+    if (!token) {
+      alert("GitHub token not configured")
+      return
+    }
+
+    fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/videos.json`, {
       headers: {
-        "Content-Type": "application/json",
+        Authorization: `token ${token}`,
       },
-      body: JSON.stringify({
-        password: ADMIN_PASSWORD,
-      }),
     })
       .then((response) => response.json())
       .then((data) => {
-        if (data.error) {
-          alert("Failed to delete video: " + data.error)
-          return
-        }
+        const content = atob(data.content)
+        const videos = JSON.parse(content).videos || []
+        videos.splice(index, 1)
+
+        const newContent = JSON.stringify({ videos }, null, 2)
+        const encodedContent = btoa(newContent)
+
+        return fetch(`https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/videos.json`, {
+          method: "PUT",
+          headers: {
+            Authorization: `token ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            message: `Delete video at index ${index}`,
+            content: encodedContent,
+            sha: data.sha,
+            branch: GITHUB_CONFIG.branch,
+          }),
+        })
+      })
+      .then((response) => response.json())
+      .then((data) => {
         alert("Video deleted successfully!")
-        loadVideosInAdmin()
+        setTimeout(() => loadVideosInAdmin(), 1000)
       })
       .catch((error) => {
         console.log("[v0] Error:", error)
