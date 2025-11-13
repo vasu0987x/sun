@@ -55,7 +55,40 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 })
 
-// Add video
+function loadVideosInAdmin() {
+  fetch("videos.json")
+    .then((response) => response.json())
+    .then((data) => {
+      const videos = data.videos || []
+      const videosList = document.getElementById("videosList")
+      const noVideosMsg = document.getElementById("noVideosMsg")
+
+      if (videos.length === 0) {
+        videosList.innerHTML = ""
+        noVideosMsg.style.display = "block"
+        return
+      }
+
+      noVideosMsg.style.display = "none"
+      videosList.innerHTML = ""
+
+      videos.forEach((video) => {
+        const item = document.createElement("div")
+        item.className = "video-item"
+        item.innerHTML = `
+            <div class="video-item-info">
+                <h3>${video.title}</h3>
+                <p><strong>Type:</strong> ${video.type === "youtube" ? "YouTube" : "Google Drive"}</p>
+                <p>${video.description || "No description"}</p>
+            </div>
+            <button class="delete-btn" onclick="deleteVideo(${video.id})">Delete</button>
+        `
+        videosList.appendChild(item)
+      })
+    })
+    .catch((error) => console.log("[v0] Error loading videos:", error))
+}
+
 function addVideo(event) {
   event.preventDefault()
 
@@ -69,62 +102,50 @@ function addVideo(event) {
     return
   }
 
-  const videos = JSON.parse(localStorage.getItem("portfolioVideos")) || []
+  // Get existing videos
+  fetch("videos.json")
+    .then((response) => response.json())
+    .then((data) => {
+      const videos = data.videos || []
 
-  const newVideo = {
-    id: Date.now(),
-    title,
-    type,
-    link,
-    description,
-  }
+      const newVideo = {
+        id: Date.now(),
+        title,
+        type,
+        link,
+        description,
+      }
 
-  videos.push(newVideo)
-  localStorage.setItem("portfolioVideos", JSON.stringify(videos))
+      videos.push(newVideo)
 
-  // Reset form
-  document.getElementById("addVideoForm").reset()
-  loadVideosInAdmin()
+      // copy the JSON below and manually update videos.json file
+      const updatedJSON = JSON.stringify({ videos }, null, 2)
+      console.log("[v0] Copy this JSON and replace the content in videos.json:")
+      console.log(updatedJSON)
 
-  alert("Video added successfully!")
+      document.getElementById("addVideoForm").reset()
+      loadVideosInAdmin()
+
+      alert(
+        "Video added! Copy the JSON from console and update videos.json file on your server to make it visible to everyone.",
+      )
+    })
 }
 
-// Load videos in admin panel
-function loadVideosInAdmin() {
-  const videos = JSON.parse(localStorage.getItem("portfolioVideos")) || []
-  const videosList = document.getElementById("videosList")
-  const noVideosMsg = document.getElementById("noVideosMsg")
-
-  if (videos.length === 0) {
-    videosList.innerHTML = ""
-    noVideosMsg.style.display = "block"
-    return
-  }
-
-  noVideosMsg.style.display = "none"
-  videosList.innerHTML = ""
-
-  videos.forEach((video) => {
-    const item = document.createElement("div")
-    item.className = "video-item"
-    item.innerHTML = `
-            <div class="video-item-info">
-                <h3>${video.title}</h3>
-                <p><strong>Type:</strong> ${video.type === "youtube" ? "YouTube" : "Google Drive"}</p>
-                <p>${video.description || "No description"}</p>
-            </div>
-            <button class="delete-btn" onclick="deleteVideo(${video.id})">Delete</button>
-        `
-    videosList.appendChild(item)
-  })
-}
-
-// Delete video
 function deleteVideo(id) {
   if (confirm("Are you sure you want to delete this video?")) {
-    let videos = JSON.parse(localStorage.getItem("portfolioVideos")) || []
-    videos = videos.filter((v) => v.id !== id)
-    localStorage.setItem("portfolioVideos", JSON.stringify(videos))
-    loadVideosInAdmin()
+    fetch("videos.json")
+      .then((response) => response.json())
+      .then((data) => {
+        let videos = data.videos || []
+        videos = videos.filter((v) => v.id !== id)
+
+        const updatedJSON = JSON.stringify({ videos }, null, 2)
+        console.log("[v0] Copy this JSON and replace the content in videos.json:")
+        console.log(updatedJSON)
+
+        loadVideosInAdmin()
+        alert("Video deleted! Copy the JSON from console and update videos.json file on your server.")
+      })
   }
 }
