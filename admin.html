@@ -14,6 +14,19 @@
                 <div class="login-box">
                     <h1>Admin Panel</h1>
                     <p class="login-subtitle">Video Management</p>
+                    
+                    <!-- GitHub Token Setup (shown only if not configured) -->
+                    <div id="tokenSetupBox" class="token-setup" style="display:none; border: 2px solid #a8ff35; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                        <h3 style="color: #a8ff35; margin-bottom: 10px;">First Time Setup</h3>
+                        <p style="font-size: 12px; color: #999; margin-bottom: 10px;">Paste your GitHub Personal Access Token to enable auto-save to your repository</p>
+                        <input type="password" id="githubToken" placeholder="GitHub Personal Access Token" class="input-field" style="margin-bottom: 10px;">
+                        <small style="color: #999; display: block; margin-bottom: 10px;">
+                            <a href="https://github.com/settings/tokens" target="_blank" style="color: #a8ff35;">Get token here</a> 
+                            (Create new token with 'repo' permission)
+                        </small>
+                        <button onclick="saveGitHubToken()" class="cta-button" style="width: 100%;">Save Token</button>
+                    </div>
+
                     <input type="password" id="passwordInput" placeholder="Enter admin password" class="input-field">
                     <button onclick="authenticateAdmin()" class="cta-button">Login</button>
                     <a href="index.html" class="back-link">Back to Portfolio</a>
