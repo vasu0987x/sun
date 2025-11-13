@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Video Manager</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="admin-container">
+        <div class="admin-panel">
+            <!-- Login Section -->
+            <div id="loginSection" class="admin-section">
+                <div class="login-box">
+                    <h1>Admin Panel</h1>
+                    <p class="login-subtitle">Video Management</p>
+                    <input type="password" id="passwordInput" placeholder="Enter admin password" class="input-field">
+                    <button onclick="authenticateAdmin()" class="cta-button">Login</button>
+                    <a href="index.html" class="back-link">Back to Portfolio</a>
+                </div>
+            </div>
+
+            <!-- Dashboard Section (Hidden until login) -->
+            <div id="dashboardSection" class="admin-section hidden">
+                <div class="dashboard">
+                    <div class="dashboard-header">
+                        <h1>Video Manager</h1>
+                        <button onclick="logoutAdmin()" class="logout-btn">Logout</button>
+                    </div>
+
+                    <!-- Add Video Form -->
+                    <div class="form-section">
+                        <h2>Add New Video</h2>
+                        <form id="addVideoForm" onsubmit="addVideo(event)">
+                            <div class="form-group">
+                                <label>Video Title</label>
+                                <input type="text" id="videoTitle" placeholder="Enter video title" required class="input-field">
+                            </div>
+
+                            <div class="form-group">
+                                <label>Video Type</label>
+                                <select id="videoType" required class="input-field">
+                                    <option value="">Select type</option>
+                                    <option value="youtube">YouTube Link</option>
+                                    <option value="drive">Google Drive Link</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label id="linkLabel">YouTube Link / Video ID</label>
+                                <input type="text" id="videoLink" placeholder="Paste link or video ID" required class="input-field">
+                                <small class="help-text" id="helpText">Paste full YouTube URL or just the video ID (e.g., dQw4w9WgXcQ)</small>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Description</label>
+                                <textarea id="videoDescription" placeholder="Enter video description" rows="4" class="input-field"></textarea>
+                            </div>
+
+                            <button type="submit" class="cta-button">Add Video</button>
+                        </form>
+                    </div>
+
+                    <!-- Videos List -->
+                    <div class="videos-section">
+                        <h2>Your Videos</h2>
+                        <div id="videosList" class="videos-list">
+                            <!-- Videos will be listed here -->
+                        </div>
+                        <div id="noVideosMsg" class="no-videos">
+                            <p>No videos added yet</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Error Message -->
+            <div id="errorMsg" class="error-message hidden"></div>
+        </div>
+    </div>
+
+    <script src="admin.js"></script>
+</body>
+</html>
