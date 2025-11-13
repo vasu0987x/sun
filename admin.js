@@ -1,7 +1,5 @@
-// Admin password (change this to your desired password)
 const ADMIN_PASSWORD = "admin123"
 
-// Authenticate admin
 function authenticateAdmin() {
   const passwordInput = document.getElementById("passwordInput").value
   const errorMsg = document.getElementById("errorMsg")
@@ -18,7 +16,6 @@ function authenticateAdmin() {
   }
 }
 
-// Logout
 function logoutAdmin() {
   document.getElementById("dashboardSection").classList.add("hidden")
   document.getElementById("loginSection").classList.remove("hidden")
@@ -26,7 +23,6 @@ function logoutAdmin() {
   document.getElementById("errorMsg").classList.add("hidden")
 }
 
-// Handle password input enter key
 document.addEventListener("DOMContentLoaded", () => {
   const passwordInput = document.getElementById("passwordInput")
   if (passwordInput) {
@@ -37,7 +33,6 @@ document.addEventListener("DOMContentLoaded", () => {
     })
   }
 
-  // Update help text based on video type
   const videoType = document.getElementById("videoType")
   const linkLabel = document.getElementById("linkLabel")
   const helpText = document.getElementById("helpText")
@@ -56,7 +51,7 @@ document.addEventListener("DOMContentLoaded", () => {
 })
 
 function loadVideosInAdmin() {
-  fetch("videos.json")
+  fetch("/api/videos")
     .then((response) => response.json())
     .then((data) => {
       const videos = data.videos || []
@@ -102,50 +97,58 @@ function addVideo(event) {
     return
   }
 
-  // Get existing videos
-  fetch("videos.json")
+  fetch("/api/videos", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      title,
+      type,
+      link,
+      description,
+      password: ADMIN_PASSWORD,
+    }),
+  })
     .then((response) => response.json())
     .then((data) => {
-      const videos = data.videos || []
-
-      const newVideo = {
-        id: Date.now(),
-        title,
-        type,
-        link,
-        description,
+      if (data.error) {
+        alert("Failed to add video: " + data.error)
+        return
       }
-
-      videos.push(newVideo)
-
-      // copy the JSON below and manually update videos.json file
-      const updatedJSON = JSON.stringify({ videos }, null, 2)
-      console.log("[v0] Copy this JSON and replace the content in videos.json:")
-      console.log(updatedJSON)
-
+      alert("Video added successfully! It's now visible to everyone.")
       document.getElementById("addVideoForm").reset()
       loadVideosInAdmin()
-
-      alert(
-        "Video added! Copy the JSON from console and update videos.json file on your server to make it visible to everyone.",
-      )
+    })
+    .catch((error) => {
+      console.log("[v0] Error:", error)
+      alert("Error adding video. Make sure server is running on http://localhost:3000")
     })
 }
 
 function deleteVideo(id) {
   if (confirm("Are you sure you want to delete this video?")) {
-    fetch("videos.json")
+    fetch(`/api/videos/${id}`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        password: ADMIN_PASSWORD,
+      }),
+    })
       .then((response) => response.json())
       .then((data) => {
-        let videos = data.videos || []
-        videos = videos.filter((v) => v.id !== id)
-
-        const updatedJSON = JSON.stringify({ videos }, null, 2)
-        console.log("[v0] Copy this JSON and replace the content in videos.json:")
-        console.log(updatedJSON)
-
+        if (data.error) {
+          alert("Failed to delete video: " + data.error)
+          return
+        }
+        alert("Video deleted successfully!")
         loadVideosInAdmin()
-        alert("Video deleted! Copy the JSON from console and update videos.json file on your server.")
+      })
+      .catch((error) => {
+        console.log("[v0] Error:", error)
+        alert("Error deleting video")
       })
   }
 }
